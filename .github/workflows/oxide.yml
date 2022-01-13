@@ -1,22 +1,40 @@
 name: oxide_ci
 on: [push, pull_request]
 jobs:
-  install-use-oxide-conda:
+  use-oxide:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - {name: "proj_template_v", command: "cd proj/proj_template_v && make PLATFORM=hps bitstream"}
+          - {name: "hps mproj", command: "cd proj/mport && pip3 list && make PLATFORM=hps bitstream software"}
+          - {name: "hps_accel test 1", command: "cd proj/hps_accel && make PLATFORM=hps bitstream"}
+          - {name: "hps_accel test 2", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_LITEX_ARGS=\"--cpu-variant=slimopt+cfu\" clean bitstream"}
+          - {name: "hps_accel test 3", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS=\"--placer-heap-timingweight 52\" EXTRA_LITEX_ARGS=\"--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params\" clean bitstream"}
+          - {name: "hps_accel test 4", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS=\"--placer-heap-timingweight 52\" EXTRA_LITEX_ARGS=\"--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params --no-compile-software\" clean bitstream"}
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - run: bash scripts/setup -ci
-      - run: which pip3 && which python3 && which pip
-      - run: make env
-      - run: which pip3 && which python3 && which pip
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && riscv32-elf-newlib-gcc --version
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && yosys --version && nextpnr-nexus --version
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && cd proj/proj_template_v && pip3 list && make PLATFORM=hps bitstream
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && ulimit -S -t 900 && ulimit -H -t 900 && cd proj/hps_accel && pip3 list && make PLATFORM=hps bitstream || true
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && ulimit -S -t 900 && ulimit -H -t 900 && cd proj/hps_accel && pip3 list && make PLATFORM=hps EXTRA_LITEX_ARGS="--cpu-variant=slimopt+cfu" clean bitstream || true
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && ulimit -S -t 900 && ulimit -H -t 900 && cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS="--placer-heap-timingweight 52" EXTRA_LITEX_ARGS="--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params" clean bitstream || true
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && ulimit -S -t 240 && ulimit -H -t 240 && cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS="--placer-heap-timingweight 52" EXTRA_LITEX_ARGS="--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params --no-compile-software" clean bitstream || true
-      - run: pwd && source env/conda/bin/activate cfu-common && source environment && cd proj/mport && pip3 list && make PLATFORM=hps bitstream software
+      - name: Environment setup
+        run: |
+          bash scripts/setup -ci
+          make env
+          source env/conda/bin/activate cfu-common
+          source environment
+      - name: Tool versions
+        run: |
+          source env/conda/bin/activate cfu-common
+          source environment
+          riscv32-elf-newlib-gcc --version
+          yosys --version
+          nextpnr-nexus --version
+      - name: ${{matrix.name}}
+        run: |
+          source env/conda/bin/activate cfu-common
+          source environment
+          ulimit -S -t 900
+          ulimit -H -t 900
+          ${{matrix.command}}
