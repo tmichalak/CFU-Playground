@@ -8,8 +8,8 @@ jobs:
         include:
           - {name: "proj_template_v", command: "cd proj/proj_template_v && make PLATFORM=hps bitstream"}
           - {name: "hps mproj", command: "cd proj/mport && pip3 list && make PLATFORM=hps bitstream software"}
-          - {name: "hps_accel test 1", command: "cd proj/hps_accel && make PLATFORM=hps bitstream"}
-          - {name: "hps_accel test 2", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_LITEX_ARGS=\"--cpu-variant=slimopt+cfu\" clean bitstream"}
+            # - {name: "hps_accel test 1", command: "cd proj/hps_accel && make PLATFORM=hps bitstream"}
+            # - {name: "hps_accel test 2", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_LITEX_ARGS=\"--cpu-variant=slimopt+cfu\" clean bitstream"}
           - {name: "hps_accel test 3", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS=\"--placer-heap-timingweight 52\" EXTRA_LITEX_ARGS=\"--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params\" clean bitstream"}
           - {name: "hps_accel test 4", command: "cd proj/hps_accel && make PLATFORM=hps EXTRA_NEXTPNR_ARGS=\"--placer-heap-timingweight 52\" EXTRA_LITEX_ARGS=\"--separate-arena --cpu-variant=slimopt+cfu --extra-nextpnr-params --no-compile-software\" clean bitstream"}
 
