@@ -22,8 +22,6 @@ jobs:
         run: |
           bash scripts/setup -ci
           make env
-          source env/conda/bin/activate cfu-common
-          source environment
       - name: Tool versions
         run: |
           source env/conda/bin/activate cfu-common
@@ -38,3 +36,9 @@ jobs:
           ulimit -S -t 900
           ulimit -H -t 900
           ${{matrix.command}}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bitstream
+          path: soc/build/*/gateware/*.bit
+
